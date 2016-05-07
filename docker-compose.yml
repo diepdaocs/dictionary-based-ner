@@ -1,0 +1,14 @@
+api:
+  image: diepdao12892/python-machine-learning-lib:latest
+  environment:
+    - PYTHONPATH=/code
+  command: gunicorn -k tornado -w 2 -b 0.0.0.0:8100 main:app --max-requests 10000
+  volumes:
+    - .:/code
+  ports:
+    - "8100:8100"
+  links:
+    - elasticsearch
+
+elasticsearch:
+  image: elasticsearch
