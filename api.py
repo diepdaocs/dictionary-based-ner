@@ -80,7 +80,7 @@ class DictionaryManageResource(Resource):
                      'lang': 'The dictionary language, default is `english`'})
     @api.response(200, 'Success')
     def delete(self):
-        """Get dictionary vocabularies"""
+        """Delete dictionaries"""
         result = {
             'error': False,
             'message': ''
@@ -106,7 +106,7 @@ class VocabularyResource(Resource):
                      'lang': 'The dictionary language, default is `english`'})
     @api.response(200, 'Success')
     def delete(self):
-        """Get dictionary vocabularies"""
+        """Delete dictionary vocabularies"""
         result = {
             'error': False,
             'message': ''
