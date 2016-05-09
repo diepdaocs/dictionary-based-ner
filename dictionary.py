@@ -44,14 +44,18 @@ class DictionaryES(Dictionary):
         logging.getLogger('elasticsearch').setLevel(logging.CRITICAL)
 
     def _get_index_list_str(self, dics, lang):
+        if not dics:
+            return '%s-*-%s' % (self.prefix_index_name, lang)
         index_list = [self._get_index_name(dic, lang) for dic in dics]
         # filter non-exists indices
         index_list = [idx for idx in index_list if self.es.indices.exists(idx)]
-        return ','.join(index_list) if index_list else '%s-*-%s' % (self.prefix_index_name, lang)
+        return ','.join(index_list)
 
     def tag(self, texts, dics, lang):
         result = []
         index_name = self._get_index_list_str(dics, lang)
+        if not index_name:
+            return []
         for text in texts:
             n_text = self._normalize(text)
             query = {
@@ -99,6 +103,8 @@ class DictionaryES(Dictionary):
     def get_voc(self, dics, lang):
         result = []
         index_name = self._get_index_list_str(dics, lang)
+        if not index_name:
+            return []
         dic_vocs = {}
         query = {
             'query': {

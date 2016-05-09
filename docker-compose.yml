@@ -12,3 +12,5 @@ api:
 
 elasticsearch:
   image: elasticsearch
+  volumes:
+    - /medxssd/data/es:/usr/share/elasticsearch/data
