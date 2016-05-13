@@ -6,6 +6,7 @@ from elasticsearch import NotFoundError, TransportError
 from elasticsearch.helpers import bulk, scan
 from util.database import get_es_client
 from util.utils import get_logger, get_unicode
+import Levenshtein
 
 
 class Dictionary(object):
@@ -26,6 +27,17 @@ class Dictionary(object):
     @staticmethod
     def _normalize(text):
         return re.sub(r'\s+', ' ', get_unicode(text).strip().lower())
+
+
+def get_ngram(text_tokens, max_gram):
+    result = set()
+    tokens_len = len(text_tokens)
+    for i in range(1, max_gram + 1):
+        for k in range(tokens_len - i + 1):
+            text = ' '.join(text_tokens[k: k + i])
+            result.add(text)
+
+    return list(result)
 
 
 class DictionaryES(Dictionary):
@@ -61,26 +73,43 @@ class DictionaryES(Dictionary):
             query = {
                 'query': {
                     'match': {
-                        'voc': n_text
+                        'voc': {
+                            'query': n_text,
+                            'fuzziness': 'AUTO'
+                        }
                     }
                 }
             }
             hits = scan(client=self.es, query=query, index=index_name, doc_type=self.doc_type)
             tag_voc = {}
+            text_tokens = None
+            text_ngram = None
+            if '*' not in index_name and ',' not in index_name:
+                # only 1 index case
+                text_tokens = self._get_text_tokens(n_text, index_name)
+                text_ngram = get_ngram(text_tokens, len(text_tokens))
             try:
                 for hit in hits:
                     doc = hit['_source']
                     voc = doc['voc']
-                    pattern = re.compile(r'\b(%s)\b' % voc, re.IGNORECASE)
-                    if pattern.search(n_text):
-                        dic = hit['_index'].split('-')[1]
-                        if dic in tag_voc:
-                            tag_voc[dic]['matches'].add(voc)
-                            tag_voc[dic]['count'] += 1
-                        else:
-                            tag_voc[dic] = {'matches': {voc}, 'count': 1}
+                    if text_tokens is None:
+                        # multi index case
+                        text_tokens = self._get_text_tokens(n_text, hit['_index'])
+                        text_ngram = get_ngram(text_tokens, len(text_tokens))
 
-                        n_text = pattern.sub('[' + dic + ']', n_text)
+                    n_voc = self._get_text_tokens(voc, hit['_index'])
+                    match_token = self._fuzzy_matching(text_ngram, ' '.join(n_voc))
+                    if not match_token:
+                        continue
+                    pattern = re.compile(r'\b(%s)\b' % match_token, re.IGNORECASE)
+                    dic = hit['_index'].split('-')[1]
+                    if dic in tag_voc:
+                        tag_voc[dic]['matches'].add((match_token, voc))
+                        tag_voc[dic]['count'] += 1
+                    else:
+                        tag_voc[dic] = {'matches': {(match_token, voc)}, 'count': 1}
+
+                    n_text = pattern.sub('[' + dic + ']', n_text)
 
             except TransportError as ex:
                 self.logger.error('index not found: %s' % ex.message)
@@ -256,3 +285,34 @@ class DictionaryES(Dictionary):
 
     def _get_index_name(self, dic, lang):
         return '%s-%s-%s' % (self.prefix_index_name, dic, lang)
+
+    @staticmethod
+    def _fuzzy_matching(text_ngram, c_text):
+        matches = {}
+        for token in text_ngram:
+            t_len = len(token)
+            num_word = len(token.split(' '))
+            if 0 <= t_len <= 2:
+                if token == c_text:
+                    return token
+            elif 3 <= t_len <= 5:
+                edit = Levenshtein.distance(token, c_text)
+                if edit <= 1 * num_word:
+                    matches[edit] = token
+            else:
+                edit = Levenshtein.distance(token, c_text)
+                if edit <= 2 * num_word:
+                    matches[edit] = token
+        if not matches:
+            return False
+        return matches[min(matches.keys())]
+
+    def _get_text_tokens(self, n_text, index_name):
+        body = {
+            'field': 'voc',
+            'text': n_text
+        }
+        tokens = self.es.indices.analyze(index_name, body)['tokens']
+        return [t['token'] for t in tokens]
+
+

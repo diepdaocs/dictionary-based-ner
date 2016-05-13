@@ -149,7 +149,7 @@ class NamedEntityTaggingResource(Resource):
             'message': ''
         }
         texts = request.values.get('texts', '')
-        texts = [t.strip().lower() for t in texts.split(',') if t]
+        texts = [t.strip() for t in texts.split(',') if t]
         if not texts:
             result['error'] = True
             result['message'] = 'texts is empty'
