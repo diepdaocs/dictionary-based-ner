@@ -2,6 +2,7 @@ import logging
 from abc import abstractmethod, ABCMeta
 import re
 
+import time
 from elasticsearch import NotFoundError, TransportError
 from elasticsearch.helpers import bulk, scan
 from util.database import get_es_client
@@ -29,10 +30,10 @@ class Dictionary(object):
         return re.sub(r'\s+', ' ', get_unicode(text).strip().lower())
 
 
-def get_ngram(text_tokens, max_gram):
+def get_ngram(text_tokens, max_gram, min_ngram=1):
     result = set()
     tokens_len = len(text_tokens)
-    for i in range(1, max_gram + 1):
+    for i in range(min_ngram, max_gram + 1):
         for k in range(tokens_len - i + 1):
             text = ' '.join(text_tokens[k: k + i])
             result.add(text)
@@ -72,11 +73,11 @@ class DictionaryES(Dictionary):
             n_text = self._normalize(text)
             query = {
                 'query': {
-                    'match': {
-                        'voc': {
-                            'query': n_text,
-                            'fuzziness': 'AUTO'
-                        }
+                    'multi_match': {
+                        'fields': ['voc', 'voc_ngram'],
+                        'query': n_text,
+                        'fuzziness': 'AUTO',
+                        'analyzer': 'standard'
                     }
                 }
             }
@@ -240,6 +241,10 @@ class DictionaryES(Dictionary):
                             'voc': {
                                 'type': 'string',
                                 'analyzer': lang if lang in self.support_languages else 'standard'
+                            },
+                            'voc_ngram': {
+                                'type': 'string',
+                                'analyzer': 'keyword'
                             }
                         }
                     }
@@ -251,6 +256,9 @@ class DictionaryES(Dictionary):
                 }
             }
             self.es.indices.create(index_name, body=body)
+            sleep = 1
+            self.logger('Sleep %s seconds for index to be available' % sleep)
+            time.sleep(sleep)
 
         # normalize vocabularies
         vocs = [self._normalize(v) for v in vocs]
@@ -269,13 +277,15 @@ class DictionaryES(Dictionary):
 
         index_actions = []
         for voc in vocs:
+            text_tokens = self._get_text_tokens(voc, index_name)
             index_actions.append({
                 '_op_type': 'index',
                 '_index': index_name,
                 '_type': self.doc_type,
                 '_id': voc,
                 '_source': {
-                    'voc': voc
+                    'voc': voc,
+                    'voc_ngram': get_ngram(text_tokens, max_gram=len(text_tokens), min_ngram=2)
                 }
             })
         stats = bulk(self.es, index_actions, stats_only=True, refresh=True)
