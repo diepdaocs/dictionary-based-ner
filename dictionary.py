@@ -257,7 +257,7 @@ class DictionaryES(Dictionary):
             }
             self.es.indices.create(index_name, body=body)
             sleep = 1
-            self.logger('Sleep %s seconds for index to be available' % sleep)
+            self.logger.info('Sleep %s seconds for index to be available' % sleep)
             time.sleep(sleep)
 
         # normalize vocabularies

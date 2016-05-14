@@ -45,6 +45,13 @@ class MyTestCase(unittest.TestCase):
         ret = stats.get_stats(['hotel in chicAgo', 'a beautiful blue (blau) sky green', 'blue sky in beijing'], ' ', '', 'english')
         self.logger.info(ret)
 
+    def test_misspelling(self):
+        stats = TextStats()
+        ret = stats.get_stats(['hotel in new york', 'hotel in newyork', 'hotel in newyoork', 'hotel in nu york', 'hotel in n york'], ' ', '', 'english')
+        for t in ret:
+            self.assertEqual(len(t['tag']), 1)
+        self.logger.info(ret)
+
 
 if __name__ == '__main__':
     unittest.main()
