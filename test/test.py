@@ -15,6 +15,7 @@ class MyTestCase(unittest.TestCase):
 
     def test_add_vocs(self):
         d = DictionaryES()
+        d.es.indices.delete('_all')
         d.add_voc(['new york', 'Chicago', 'San Francisco', 'Lisbonk', 'Portugal',
                    'Mumbai', 'Cochin', 'Kolkata', 'Beijing', 'Shanghai', 'NY'], 'city', 'english')
         d.add_voc(['black', 'white', 'yellow', 'red', 'green', 'blue', 'orange'], 'color', 'english')
@@ -27,11 +28,11 @@ class MyTestCase(unittest.TestCase):
 
     def test_remove_vocs(self):
         d = DictionaryES()
-        d.remove_voc('city', ['new york', 'Schwarz'], 'english')
+        d.remove_voc('city', ['Schwarz'], 'english')
 
     def test_delete_dic(self):
         d = DictionaryES()
-        res = d.remove_dic(['color'], 'english')
+        res = d.remove_dic(['color'], 'abc')
         self.logger.debug(res)
 
     def test_tag_texts(self):

@@ -3,7 +3,7 @@ from flask_restplus import Api, Resource, fields
 
 from dictionary import DictionaryES
 from text_stats import TextStats
-from util.utils import get_logger
+from util.utils import get_logger, get_unicode
 
 logger = get_logger(__name__)
 
@@ -162,5 +162,7 @@ class NamedEntityTaggingResource(Resource):
         lang = request.values.get('lang', 'english')
 
         stats = TextStats()
+        logger.info('Process request with texts=%s, count_only=%s, lookup=%s, lang=%s' %
+                    ([get_unicode(t) for t in texts], count_only, lookup, lang))
         result['texts'] = stats.get_stats(texts, count_only, lookup, lang)
         return result
