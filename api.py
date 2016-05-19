@@ -1,13 +1,13 @@
-from flask import Flask, request
+from flask import Flask, request, render_template
 from flask_restplus import Api, Resource, fields
 
+from app import app
 from dictionary import DictionaryES
 from text_stats import TextStats
 from util.utils import get_logger, get_unicode
 
 logger = get_logger(__name__)
 
-app = Flask(__name__)
 api = Api(app, doc='/doc/', version='1.0', title='Named entity tagging')
 
 ns_dic = api.namespace('dictionary', 'Manage dictionaries')
