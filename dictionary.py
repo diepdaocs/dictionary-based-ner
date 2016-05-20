@@ -88,6 +88,7 @@ class DictionaryES(Dictionary):
             if '*' not in index_name and ',' not in index_name:
                 # only 1 index case
                 text_tokens = self._get_text_tokens(n_text, index_name)
+                n_text = ' '.join(text_tokens)
                 text_ngram = get_ngram(text_tokens, len(text_tokens))
             try:
                 for hit in hits:
@@ -96,6 +97,7 @@ class DictionaryES(Dictionary):
                     if text_tokens is None:
                         # multi index case
                         text_tokens = self._get_text_tokens(n_text, hit['_index'])
+                        n_text = ' '.join(text_tokens)
                         text_ngram = get_ngram(text_tokens, len(text_tokens))
 
                     n_voc = self._get_text_tokens(voc, hit['_index'])
