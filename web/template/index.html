@@ -1,8 +1,46 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<h3>Upload Dictionary</h3>
-<input type="file">
-<h3>Named Entity Tagging</h3>
-<input type="file">
+
+<h3>Upload dictionary</h3>
+<form role="form" class="form-inline" action="{{ url_for('upload_dic') }}" method="POST" enctype="multipart/form-data">
+    <div class="form-group">
+        <label for="dic_name">Name</label>
+        <input type="text" name="dic_name" id="dic_name" class="form-control" placeholder="e.g city or color" required>
+    </div>
+    <div class="form-group">
+        <label for="dic_lang">Language</label>
+        <input type="text" name="dic_lang" id="dic_lang" placeholder="Default is english" class="form-control">
+    </div>
+    <div class="form-group">
+        <input type="file" name="file_dic" class="form-control" required>
+    </div>
+    <input type="submit" value="Submit" class="btn btn-default">
+</form>
+
+<h3>Named entity recognition</h3>
+<form role="form" class="form-inline" action="{{ url_for('tag_ne') }}" method="POST" enctype="multipart/form-data">
+    <div class="form-group">
+        <label for="lookup">Lookup</label>
+        <input type="text" name="lookup" id="lookup" class="form-control" placeholder="If empty, lookup all dictionaries">
+    </div>
+    <div class="form-group">
+        <label for="lookup_lang">Language</label>
+        <input type="text" name="lookup_lang" id="lookup_lang" placeholder="Default is english" class="form-control">
+    </div>
+    <div class="form-group">
+        <label for="count_only">Count only</label>
+        <input type="text" name="count_only" id="count_only" class="form-control" placeholder="Specific string">
+    </div>
+    <div class="form-group">
+        <input type="file" name="file_text" class="form-control" required>
+    </div>
+    <input type="submit" value="Submit" class="btn btn-default">
+</form>
+
+<h3>Result</h3>
+<form role="form" class="form-inline" action="{{ url_for('download_file', filename='result.csv') }}" method="GET" enctype="multipart/form-data">
+    <input type="submit" value="Download" class="btn btn-default">
+</form>
+
 {% endblock %}

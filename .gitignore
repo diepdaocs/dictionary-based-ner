@@ -3,3 +3,4 @@ model
 .idea
 fabfile.py
 *.pyc
+web/upload
