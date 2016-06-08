@@ -46,3 +46,9 @@ def get_unicode(text):
     if isinstance(text, unicode):
         return text
     return unicode(text, encoding='utf-8', errors='ignore')
+
+
+def chunks(l, n):
+    """Yield successive n-sized chunks from l."""
+    for i in range(0, len(l), n):
+        yield l[i:i+n]
