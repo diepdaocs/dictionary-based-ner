@@ -139,7 +139,7 @@ class DictionaryES(Dictionary):
         if len(texts) < 3:
             return [self._get_tag_info((text, dics, index_name)) for text in texts]
 
-        pool = Pool(cpu_count() * 2)
+        pool = Pool(8)
         result = pool.map(self._get_tag_info, [(text, dics, index_name) for text in texts])
         pool.terminate()
         return result
@@ -308,7 +308,7 @@ class DictionaryES(Dictionary):
             self.logger.info('End add_voc...')
             return stats
 
-        pool = Pool(cpu_count() * 2)
+        pool = Pool(8)
         stats = pool.map(self._bulk_index, [chunk for chunk in chunks(index_actions, 1000)])
         pool.terminate()
 
