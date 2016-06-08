@@ -75,7 +75,9 @@ class DictionaryES(Dictionary):
                     'fields': ['voc', 'voc_ngram'],
                     'query': n_text,
                     'fuzziness': 'AUTO',
-                    'analyzer': 'standard'
+                    'analyzer': 'standard',
+                    'prefix_length': 3,
+                    'max_expansions': 5
                 }
             }
         }
@@ -328,12 +330,18 @@ class DictionaryES(Dictionary):
     @staticmethod
     def _fuzzy_matching(text_ngram, c_text):
         matches = {}
+        c_text = c_text.lower()
         for token in text_ngram:
+            token = token.lower()
+            if token[0:2] != c_text[0:2]:
+                continue
+
             t_len = len(token)
-            if 0 <= t_len <= 2:
+
+            if 0 <= t_len <= 3:
                 if token == c_text:
                     return token
-            elif 3 <= t_len <= 5:
+            elif 4 <= t_len <= 5:
                 edit = Levenshtein.distance(token, c_text)
                 if edit <= 1:
                     matches[edit] = token
@@ -346,11 +354,12 @@ class DictionaryES(Dictionary):
         return matches[min(matches.keys())]
 
     def _get_text_tokens(self, n_text, index_name):
-        body = {
-            'field': 'voc',
-            'text': n_text
-        }
-        tokens = self.es.indices.analyze(index_name, body)['tokens']
-        return [t['token'] for t in tokens]
+        # body = {
+        #     'field': 'voc',
+        #     'text': n_text
+        # }
+        # tokens = self.es.indices.analyze(index_name, body)['tokens']
+        # return [t['token'] for t in tokens]
+        return [t.strip() for t in n_text.split() if t]
 
 

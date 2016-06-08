@@ -48,7 +48,7 @@ def upload_dic():
         df = pd.read_csv(file_dic_path, encoding='utf-8')
         if 'vocabulary' not in df:
             return render_template('message.html', message="File csv must contain 'vocabulary' field")
-        lst_voc = [v for v in df['vocabulary'].tolist() if v and v.strip()]
+        lst_voc = [v for v in df['vocabulary'].tolist() if v and type(v) not in (int, float) and v.strip()]
         os.remove(file_dic_path)
         if not lst_voc:
             return render_template('message.html', message='List vocabularies is empty')

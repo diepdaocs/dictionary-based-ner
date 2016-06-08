@@ -4,3 +4,5 @@ model
 fabfile.py
 *.pyc
 web/upload
+cities15000.txt
+*.csv
