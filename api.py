@@ -1,5 +1,5 @@
-from flask import Flask, request, render_template
-from flask_restplus import Api, Resource, fields
+from flask import request
+from flask_restplus import Api, Resource
 
 from app import app
 from dictionary import DictionaryES
