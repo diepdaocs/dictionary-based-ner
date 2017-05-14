@@ -44,7 +44,7 @@ class DictionaryManageResource(Resource):
             result['message'] = 'vocs is empty'
             return result
 
-        dic = request.values.get('dic', '')
+        dic = request.values.get('dic', '').strip().lower()
         if not dic:
             result['error'] = True
             result['message'] = 'dic is empty'
@@ -111,7 +111,7 @@ class VocabularyResource(Resource):
             'error': False,
             'message': ''
         }
-        dic = request.values.get('dic', '')
+        dic = request.values.get('dic', '').strip().lower()
         if not dic:
             result['error'] = True
             result['message'] = 'dic is empty'
