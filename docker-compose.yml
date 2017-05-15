@@ -2,7 +2,7 @@ api:
   image: diepdao12892/python-machine-learning-lib:latest
   environment:
     - PYTHONPATH=/code
-  command: gunicorn -k tornado -w 2 -b 0.0.0.0:1999 main:app --max-requests 10000 --timeout 7200
+  entrypoint: /code/entrypoint.sh
   volumes:
     - .:/code
   ports:
@@ -14,3 +14,6 @@ elasticsearch:
   image: elasticsearch:2.4
   volumes:
     - /root/es-data:/usr/share/elasticsearch/data
+  ports:
+    - 9200:9200
+    - 9300:9300
