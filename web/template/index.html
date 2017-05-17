@@ -3,19 +3,29 @@
 {% block content %}
 
 <h2>Upload dictionary</h2>
-<form role="form" class="form-inline" action="{{ url_for('upload_dic') }}" method="POST" enctype="multipart/form-data">
+<form role="form" class="form-horizontal" action="{{ url_for('upload_dic') }}" method="POST" enctype="multipart/form-data">
     <div class="form-group">
-        <label for="dic_name">Name</label>
-        <input type="text" name="dic_name" id="dic_name" class="form-control" placeholder="e.g city or color" required>
+        <label class="control-label col-sm-2" for="dic_name">Name</label>
+        <div class="col-sm-10">
+            <input type="text" name="dic_name" id="dic_name" class="form-control" placeholder="e.g city or color" required>
+        </div>
     </div>
     <div class="form-group">
-        <label for="dic_lang">Language</label>
-        <input type="text" name="dic_lang" id="dic_lang" placeholder="Default is english" class="form-control">
+        <label class="control-label col-sm-2" for="dic_lang">Language</label>
+        <div class="col-sm-10">
+            <input type="text" name="dic_lang" id="dic_lang" placeholder="Default is english" class="form-control">
+        </div>
     </div>
     <div class="form-group">
-        <input type="file" name="file_dic" class="form-control" required>
+        <div class="col-sm-offset-2 col-sm-10">
+            <input type="file" name="file_dic" class="form-control" required>
+        </div>
     </div>
-    <input type="submit" value="Submit" class="btn btn-default">
+    <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+          <button type="submit" class="btn btn-default">Submit</button>
+        </div>
+    </div>
 </form>
 
 <h2>Named entity recognition</h2>
@@ -39,9 +49,9 @@
         </div>
     </div>
     <div class="form-group">
-        <label class="control-label col-sm-2" for="matching_type">Matching type:</label>
+        <label class="control-label col-sm-2" for="match_type">Matching type:</label>
         <div class="col-sm-10">
-            <input type="text" name="matching_type" id="matching_type" class="form-control" placeholder="broad or exact, default is broad">
+            <input type="text" name="match_type" id="match_type" class="form-control" placeholder="broad or exact, default is broad">
         </div>
     </div>
     <div class="form-group">
@@ -53,7 +63,7 @@
         <div class="col-sm-offset-2 col-sm-10">
           <button type="submit" class="btn btn-default">Submit</button>
         </div>
-  </div>
+    </div>
 </form>
 
 <h2>Result</h2>
