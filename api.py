@@ -170,5 +170,5 @@ class NamedEntityTaggingResource(Resource):
         stats = TextStats()
         logger.info('Process request with texts=%s, count_only=%s, lookup=%s, lang=%s' %
                     ([get_unicode(t) for t in texts], count_only, lookup, lang))
-        result['texts'] = stats.get_stats(texts, count_only, lookup, lang)
+        result['texts'] = stats.get_stats(texts, count_only, lookup, lang, match_type)
         return result
