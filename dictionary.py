@@ -3,7 +3,7 @@ from abc import abstractmethod, ABCMeta
 import re
 
 import time
-from elasticsearch import NotFoundError, TransportError
+from elasticsearch import TransportError
 from elasticsearch.helpers import bulk, scan
 from multiprocessing import cpu_count
 
@@ -60,6 +60,7 @@ class DictionaryES(Dictionary):
                                   'persian',
                                   'portuguese', 'romanian', 'russian', 'sorani', 'spanish', 'swedish', 'turkish',
                                   'thai'}
+        self.thread_num = cpu_count() * 2
         logging.getLogger('elasticsearch').setLevel(logging.CRITICAL)
 
     def _get_index_list_str(self, dics, lang):
@@ -154,7 +155,7 @@ class DictionaryES(Dictionary):
         if len(texts) < 10:
             return [self._get_tag_info((text, lang, dics, index_name, match_type)) for text in texts]
 
-        pool = Pool(8)
+        pool = Pool(self.thread_num)
         result = pool.map(self._get_tag_info, [(text, lang, dics, index_name, match_type) for text in texts])
         pool.terminate()
         return result

@@ -12,4 +12,4 @@ def get_redis_conn():
 
 
 def get_es_client():
-    return Elasticsearch(hosts=['localhost:9200'])
+    return Elasticsearch(hosts=['elasticsearch:9200'])
