@@ -58,7 +58,7 @@ def upload_dic():
 
     elif not allowed_file(file_dic.filename):
         return render_template('message.html', message='File type is not supported, supported file type is %s'
-                                                % ', '.join(sup_file_type))
+                                                       % ', '.join(sup_file_type))
 
     return render_template('message.html', message='Something error')
 
@@ -73,6 +73,9 @@ def tag_ne():
         lookup_lang = 'english'
 
     count_only = request.values.get('count_only', '')
+    match_type = request.values.get('match_type', 'broad').strip().lower()
+    if match_type not in ['broad', 'exact']:
+        return render_template('message.html', message='Text matching type `%s` is not supported' % match_type)
 
     file_text = request.files.get('file_text')
     if file_text and allowed_file(file_text.filename):
@@ -88,7 +91,7 @@ def tag_ne():
         if not lst_text:
             return render_template('message.html', message='List text is empty')
         s = TextStats()
-        texts_stats = s.get_stats(lst_text, count_only, lookup, lookup_lang)
+        texts_stats = s.get_stats(lst_text, count_only, lookup, lookup_lang, match_type)
         df['type'] = ''
         df['norm_text'] = ''
         df['tag'] = ''

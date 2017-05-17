@@ -26,7 +26,7 @@ class TextStats(object):
 
         return text_type
 
-    def get_stats(self, texts, count_only, lookup, lang):
+    def get_stats(self, texts, count_only, lookup, lang, match_type='broad'):
         result = []
         # basic stats
         for text in texts:
@@ -39,7 +39,7 @@ class TextStats(object):
             })
 
         # named entity tagging
-        tags = self.dictionary.tag(texts, lookup, lang)
+        tags = self.dictionary.tag(texts, lookup, lang, match_type)
 
         for idx, tag in enumerate(tags):
             result[idx]['norm_text'] = tag['norm_text']

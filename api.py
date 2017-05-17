@@ -140,7 +140,8 @@ class NamedEntityTaggingResource(Resource):
     @api.doc(params={'texts': 'The texts for NER, if many, separate by comma',
                      'count_only': 'Specific string for counting in each text',
                      'lookup': 'Dictionaries for tagging, if empty, get all',
-                     'lang': 'The dictionary language, default is `english`'})
+                     'lang': 'The dictionary language, default is `english`',
+                     'match_type': 'Text matching type, supported type are `broad`, `exact`, default is `broad`'})
     @api.response(200, 'Success')
     def post(self):
         """Post texts for named entity recognition"""
@@ -160,6 +161,11 @@ class NamedEntityTaggingResource(Resource):
         lookup = [l.strip().lower() for l in lookup.split(',') if l]
 
         lang = request.values.get('lang', 'english')
+        match_type = request.values.get('match_type', 'broad').strip().lower()
+        if match_type not in ['broad', 'exact']:
+            result['error'] = True
+            result['message'] = 'Text matching type `%s` is not supported' % match_type
+            return result
 
         stats = TextStats()
         logger.info('Process request with texts=%s, count_only=%s, lookup=%s, lang=%s' %

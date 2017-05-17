@@ -45,6 +45,9 @@ def get_ngram(text_tokens, max_gram, min_ngram=1):
 
 
 class DictionaryES(Dictionary):
+    MATCH_TYPE_BROAD = 'broad'
+    MATCH_TYPE_EXACT = 'exact'
+
     def __init__(self):
         self.logger = get_logger(self.__class__.__name__)
         self.es = get_es_client()
@@ -67,21 +70,32 @@ class DictionaryES(Dictionary):
         index_list = [idx for idx in index_list if self.es.indices.exists(idx)]
         return ','.join(index_list)
 
-    def _get_tag_info(self, (text, dics, index_name)):
+    def _get_tag_info(self, (text, dics, index_name, match_type)):
         n_text = self._normalize(text)
-        query = {
-            'query': {
-                'multi_match': {
-                    'fields': ['voc', 'voc_ngram'],
-                    'query': n_text,
-                    'fuzziness': 'AUTO',
-                    'analyzer': 'standard',
-                    'prefix_length': 3,
-                    'max_expansions': 5
+        if match_type == self.MATCH_TYPE_BROAD:
+            query = {
+                'query': {
+                    'multi_match': {
+                        'fields': ['voc', 'voc_ngram'],
+                        'query': n_text,
+                        'fuzziness': 'AUTO',
+                        'analyzer': 'standard',
+                        'prefix_length': 3,
+                        'max_expansions': 5
+                    }
                 }
             }
-        }
-        hits = scan(client=self.es, query=query, index=index_name, doc_type=self.doc_type)
+        else:
+            query = {
+                'query': {
+                    'match': {
+                        'voc': n_text
+                    }
+                }
+            }
+
+        query['size'] = 100
+        hits = self.es.search(index=index_name, doc_type=self.doc_type, body=query)['hits']['hits']
         tag_voc = {}
         text_tokens = None
         text_ngram = None
@@ -100,8 +114,9 @@ class DictionaryES(Dictionary):
                     n_text = ' '.join(text_tokens)
                     text_ngram = get_ngram(text_tokens, len(text_tokens))
 
-                n_voc = self._get_text_tokens(voc, hit['_index'])
-                match_token = self._fuzzy_matching(text_ngram, ' '.join(n_voc))
+                n_voc = ' '.join(self._get_text_tokens(voc, hit['_index']))
+                match_token = self._fuzzy_matching(text_ngram, n_voc) if match_type == self.MATCH_TYPE_BROAD \
+                    else self._exact_matching(text_ngram, n_voc)
                 if not match_token:
                     continue
                 pattern = re.compile(r'\b(%s)\b' % match_token, re.IGNORECASE)
@@ -131,16 +146,16 @@ class DictionaryES(Dictionary):
             'tag': tag_voc
         }
 
-    def tag(self, texts, dics, lang):
+    def tag(self, texts, dics, lang, match_type):
         self.logger.info("Start tag %s texts by %s in %s language..." % (len(texts), dics, lang))
         index_name = self._get_index_list_str(dics, lang)
         if not index_name:
             return []
         if len(texts) < 3:
-            return [self._get_tag_info((text, dics, index_name)) for text in texts]
+            return [self._get_tag_info((text, dics, index_name, match_type)) for text in texts]
 
         pool = Pool(8)
-        result = pool.map(self._get_tag_info, [(text, dics, index_name) for text in texts])
+        result = pool.map(self._get_tag_info, [(text, dics, index_name, match_type) for text in texts])
         pool.terminate()
         return result
 
@@ -265,7 +280,8 @@ class DictionaryES(Dictionary):
                 },
                 'settings': {
                     'index': {
-                        'number_of_shards': 1
+                        'number_of_shards': 1,
+                        'number_of_replicas': 0
                     }
                 }
             }
@@ -353,6 +369,16 @@ class DictionaryES(Dictionary):
             return False
         return matches[min(matches.keys())]
 
+    @staticmethod
+    def _exact_matching(text_ngram, c_text):
+        c_text = c_text.trip().lower()
+        for token in text_ngram:
+            token = token.strip().lower()
+            if token == c_text:
+                return token
+
+        return False
+
     def _get_text_tokens(self, n_text, index_name):
         # body = {
         #     'field': 'voc',
@@ -360,6 +386,6 @@ class DictionaryES(Dictionary):
         # }
         # tokens = self.es.indices.analyze(index_name, body)['tokens']
         # return [t['token'] for t in tokens]
-        return [t.strip() for t in n_text.split() if t]
+        return [t.strip() for t in n_text.split() if t and t.strip()]
 
 

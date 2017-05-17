@@ -1,3 +1,5 @@
+langdetect
 flask
 redis
 elasticsearch
+pandas
