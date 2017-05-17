@@ -35,8 +35,15 @@ docker-compose up
 ```
 # Deployment #
 Current deployed branch: `optimize_english`
-Using `docker-compose up` to run application.
 
+Using `docker-compose up` to run application.
+```
+#!bash
+git clone https://bitbucket.org/diepdt/named-entity-tagging.git
+git fetch && git checkout optimize_english
+cd named-entity-tagging
+docker-compose up
+```
 Using [**supervisor**](https://www.digitalocean.com/community/tutorials/how-to-install-and-manage-supervisor-on-ubuntu-and-debian-vps) to monitor application processes, it will **automatically restart** application when **crash** or **server reboot**.
 ```
 #!bash
