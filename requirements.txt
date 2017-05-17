@@ -1,5 +1,7 @@
-langdetect
-flask
-redis
-elasticsearch
-pandas
+elasticsearch==5.3.0
+Flask==0.12.2
+flask-restplus==0.10.1
+langdetect==1.0.7
+nltk==3.1
+pandas==0.20.1
+python-Levenshtein==0.12.0

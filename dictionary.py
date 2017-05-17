@@ -25,7 +25,7 @@ class Dictionary(object):
         pass
 
     @abstractmethod
-    def tag(self, texts, dics, lang):
+    def tag(self, texts, dics, lang, match_type):
         pass
 
     @staticmethod
@@ -70,7 +70,7 @@ class DictionaryES(Dictionary):
         index_list = [idx for idx in index_list if self.es.indices.exists(idx)]
         return ','.join(index_list)
 
-    def _get_tag_info(self, (text, dics, index_name, match_type)):
+    def _get_tag_info(self, (text, lang, dics, index_name, match_type)):
         n_text = self._normalize(text)
         if match_type == self.MATCH_TYPE_BROAD:
             query = {
@@ -79,7 +79,7 @@ class DictionaryES(Dictionary):
                         'fields': ['voc', 'voc_ngram'],
                         'query': n_text,
                         'fuzziness': 'AUTO',
-                        'analyzer': 'standard',
+                        'analyzer': lang,
                         'prefix_length': 3,
                         'max_expansions': 5
                     }
@@ -151,11 +151,11 @@ class DictionaryES(Dictionary):
         index_name = self._get_index_list_str(dics, lang)
         if not index_name:
             return []
-        if len(texts) < 3:
-            return [self._get_tag_info((text, dics, index_name, match_type)) for text in texts]
+        if len(texts) < 10:
+            return [self._get_tag_info((text, lang, dics, index_name, match_type)) for text in texts]
 
         pool = Pool(8)
-        result = pool.map(self._get_tag_info, [(text, dics, index_name, match_type) for text in texts])
+        result = pool.map(self._get_tag_info, [(text, lang, dics, index_name, match_type) for text in texts])
         pool.terminate()
         return result
 
@@ -371,7 +371,7 @@ class DictionaryES(Dictionary):
 
     @staticmethod
     def _exact_matching(text_ngram, c_text):
-        c_text = c_text.trip().lower()
+        c_text = c_text.strip().lower()
         for token in text_ngram:
             token = token.strip().lower()
             if token == c_text:

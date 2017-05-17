@@ -5,3 +5,4 @@ fabfile.py
 *.pyc
 cities15000.txt
 *.csv
+worker
