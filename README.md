@@ -1,19 +1,43 @@
-### Named Entity Tagging ###
+# Named Entity Tagging #
+[TOC]
 
+# Overview #
 Named entity tagging using dictionaries
 
-### Development ###
-Using docker
+# Development #
+## Using [python virtual environment](http://python-guide-pt-br.readthedocs.io/en/latest/dev/virtualenvs/) ##
+### Command line ###
+```
+#!bash
+pip install virtualenv
+cd path/to/project
+virtualenv worker
+./worker/bin/python main.py
+```
+### IDE (e.g PyCharm) ###
+[Creating Virtual Environment](https://www.jetbrains.com/help/pycharm/2017.1/creating-virtual-environment.html)
+## Using docker ##
 ```
 #!bash
 cd /path/to/project (e.g cd /root/projects/named-entity-tagging)
 docker-compose up
 ```
+# Testing #
 
-### Deployment ###
+* Web UI: http://localhost:1999
+
+* API Swagger: http://localhost:1999/doc
+
+* Unit test: must have Elasticsearch run on local by `docker-compose up elasticsearch`, modify `util/database.py` to change `elasticsearch:900` to `localhost:9200`
+```
+#!bash
+./worker/bin/python tests/test.py
+```
+# Deployment #
+Current deployed branch: `optimize_english`
 Using `docker-compose up` to run application.
 
-Using **supervisor** to monitor application processes, it will **automatically restart** application when **crash** or **server reboot**.
+Using [**supervisor**](https://www.digitalocean.com/community/tutorials/how-to-install-and-manage-supervisor-on-ubuntu-and-debian-vps) to monitor application processes, it will **automatically restart** application when **crash** or **server reboot**.
 ```
 #!bash
 sudo supervisorctl
@@ -26,6 +50,7 @@ supervisor> restart ner
 ner: stopped
 ner: started
 
+supervisor> tail -f ner
 ```
 There 2 running apps
 
@@ -65,6 +90,6 @@ stdout_logfile=/var/log/cerebro.out.log
 redirect_stderr=true
 ```
 
-### Authors ###
+# Authors #
 
 * Diep Dao - diepdaocs@gmail.com
